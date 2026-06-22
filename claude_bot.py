@@ -211,18 +211,14 @@ def _goi_claude(system_text: str, messages: list, max_tokens: int = 350) -> str:
 SO_LUOT_CHUA_BAO_GIA = 2
 
 
-def tra_loi(tin_nhan_khach: str, lich_su: list | None = None, luot: int | None = None) -> str:
+def tra_loi(tin_nhan_khach: str, lich_su: list | None = None) -> str:
     """
     Trả lời tin nhắn Messenger theo GIAI ĐOẠN:
     - 2 lượt đầu: chưa báo giá, tập trung xác định đối tượng + phân tích nhu cầu.
     - Từ lượt 3 (đã tư vấn đủ): được báo giá ở bước cuối + ưu đãi Ms. Hạnh.
-
-    luot: số lượt của khách TRONG PHIÊN hiện tại (do store tính theo phiên).
-          Nếu không truyền, suy ra từ độ dài lịch sử (cách cũ).
     """
     lich_su = lich_su or []
-    if luot is None:
-        luot = len(lich_su) // 2 + 1  # đây là lượt thứ mấy của khách
+    luot = len(lich_su) // 2 + 1  # đây là lượt thứ mấy của khách
 
     if luot <= SO_LUOT_CHUA_BAO_GIA:
         giai_doan = (

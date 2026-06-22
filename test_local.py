@@ -171,9 +171,8 @@ def chat():
 
     # Chế độ tin nhắn (Messenger) — dùng bộ nhớ bền để test "nhớ ngữ cảnh"
     lich_su = store.lay_lich_su(UID_TEST)
-    luot = store.luot_phien_hien_tai(UID_TEST)
-    reply = tra_loi(noi_dung, lich_su, luot)
-    store.ghi_tin_khach(UID_TEST, "", noi_dung, reply, luot)
+    reply = tra_loi(noi_dung, lich_su)
+    store.ghi_tin_khach(UID_TEST, "", noi_dung, reply)
     return jsonify({"reply": reply, "tag": None})
 
 
