@@ -10,6 +10,8 @@ Bạn KHÔNG cần hiểu hết file này. Chỉ cần chạy nó theo HUONG_DAN
 
 import os
 import sys
+import time
+import threading
 import requests
 from flask import Flask, request
 from dotenv import load_dotenv
@@ -39,6 +41,28 @@ SO_TANG_CONG_KHAI = int(os.environ.get("SO_TANG_CONG_KHAI", 2))
 
 # Đếm số lần bot đã trả lời comment cho mỗi khách (theo từng bài đăng).
 dem_comment = {}
+
+
+# ====================================================================
+# MÁY ĐÁNH THỨC — server tự ping chính nó để không bị Render cho "ngủ"
+# ====================================================================
+def _giu_thuc():
+    """Mỗi 10 phút tự gọi vào địa chỉ web của chính mình để giữ server luôn thức."""
+    url = os.environ.get("RENDER_EXTERNAL_URL")  # Render tự cấp biến này
+    if not url:
+        return  # chạy ở máy cá nhân thì không cần
+    while True:
+        time.sleep(600)  # 10 phút
+        try:
+            requests.get(url, timeout=15)
+            print("⏰ Tự đánh thức server (giữ thức).")
+        except Exception as e:
+            print(f"[Keep-alive] {e}")
+
+
+# Chỉ bật khi chạy trên Render (có RENDER_EXTERNAL_URL)
+if os.environ.get("RENDER_EXTERNAL_URL"):
+    threading.Thread(target=_giu_thuc, daemon=True).start()
 
 
 @app.route("/", methods=["GET"])
