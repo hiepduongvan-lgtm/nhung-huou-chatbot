@@ -255,17 +255,17 @@ def tra_loi(tin_nhan_khach: str, lich_su: list | None = None) -> str:
                 "Hotline Ms. Hạnh: 0977 469 988 🦌")
 
 
-def tra_loi_comment(noi_dung_comment: str, tang: int = 1, ten_khach: str = "") -> str:
+def tra_loi_comment(noi_dung_comment: str, tang: int = 1, ten_khach: str = "",
+                    nguong_cong_khai: int = 3) -> str:
     """
     Tạo câu trả lời cho COMMENT dưới bài đăng (hành xử như nhân viên thật).
 
-    tang 1-2 -> trả lời CÔNG KHAI: ngắn, tự nhiên, KHÔNG báo giá công khai,
-                mời khách để lại SĐT hoặc nhắn tin (inbox) để được tư vấn & báo giá.
-    tang >=3 -> NHẮN TIN RIÊNG (inbox): tư vấn đầy đủ, có thể báo giá, xin SĐT.
+    tang <= nguong_cong_khai -> trả lời CÔNG KHAI: ngắn, KHÔNG báo giá, mời inbox khi cần.
+    tang >  nguong_cong_khai -> chuyển sang mời khách NHẮN TIN RIÊNG (inbox).
     """
     chao = f"Khách bình luận tên là: {ten_khach}.\n" if ten_khach else ""
 
-    if tang >= 3:
+    if tang > nguong_cong_khai:
         tinh_huong = (
             f"{chao}Bạn vừa chuyển sang NHẮN TIN RIÊNG (Messenger) với khách sau khi "
             "đã trả lời comment công khai vài lần. Hãy chào thân mật (kèm tên nếu có), "

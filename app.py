@@ -36,8 +36,8 @@ VERIFY_TOKEN = os.environ.get("VERIFY_TOKEN", "nhunghuouboda")  # tự đặt, d
 PAGE_ACCESS_TOKEN = os.environ.get("PAGE_ACCESS_TOKEN", "")     # token của fanpage (điền sau cũng được)
 
 # Số lần bot trả lời CÔNG KHAI tối đa trước khi chuyển sang nhắn tin riêng (inbox).
-# Mặc định 2 -> đến comment thứ 3 của cùng 1 khách thì bot inbox.
-SO_TANG_CONG_KHAI = int(os.environ.get("SO_TANG_CONG_KHAI", 2))
+# Mặc định 3 -> trả lời công khai 3 lần, đến comment thứ 4 thì mời khách inbox.
+SO_TANG_CONG_KHAI = int(os.environ.get("SO_TANG_CONG_KHAI", 3))
 
 # Đếm số lần bot đã trả lời comment cho mỗi khách (theo từng bài đăng).
 dem_comment = {}
@@ -152,7 +152,8 @@ def xu_ly_comment(value: dict, page_id: str):
     # Nếu khách để lại số điện thoại ngay trong comment -> lưu khách hàng
     xu_ly_lead(ten_khach, noi_dung, "Comment")
 
-    cau_tra_loi = tra_loi_comment(noi_dung, tang=tang, ten_khach=ten_khach)
+    cau_tra_loi = tra_loi_comment(noi_dung, tang=tang, ten_khach=ten_khach,
+                                  nguong_cong_khai=SO_TANG_CONG_KHAI)
 
     if tang <= SO_TANG_CONG_KHAI:
         # Tầng 1-2: trả lời CÔNG KHAI dưới comment
