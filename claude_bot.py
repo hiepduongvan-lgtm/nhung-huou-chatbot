@@ -267,12 +267,11 @@ def tra_loi_comment(noi_dung_comment: str, tang: int = 1, ten_khach: str = "",
 
     if tang > nguong_cong_khai:
         tinh_huong = (
-            f"{chao}Bạn vừa chuyển sang NHẮN TIN RIÊNG (Messenger) với khách sau khi "
-            "đã trả lời comment công khai vài lần. Hãy chào thân mật (kèm tên nếu có), "
-            "cảm ơn khách đã quan tâm và mời khách tiếp tục trao đổi tại đây để được "
-            "tư vấn kỹ. KHÔNG nêu giá trong tin này — hãy bắt đầu bằng việc hỏi nhu "
-            "cầu (mua cho ai, cần hỗ trợ điều gì). Có thể mời khách để lại SỐ ĐIỆN "
-            "THOẠI hoặc EMAIL."
+            f"{chao}Bạn đang NHẮN TIN RIÊNG (Messenger/inbox) cho khách vừa BÌNH LUẬN "
+            "trên bài đăng của Fanpage. Hãy cảm ơn khách đã quan tâm, chào thân mật "
+            "(kèm tên nếu có), và bắt đầu tư vấn bằng việc hỏi nhu cầu (mua cho ai, cần "
+            "hỗ trợ điều gì). KHÔNG nêu giá trong tin này. Mời khách tiếp tục trao đổi "
+            "tại đây hoặc để lại SỐ ĐIỆN THOẠI / EMAIL để được tư vấn kỹ."
         )
     else:
         tinh_huong = (

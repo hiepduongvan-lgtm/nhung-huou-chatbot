@@ -39,6 +39,11 @@ PAGE_ACCESS_TOKEN = os.environ.get("PAGE_ACCESS_TOKEN", "")     # token của fa
 # Mặc định 3 -> trả lời công khai 3 lần, đến comment thứ 4 thì mời khách inbox.
 SO_TANG_CONG_KHAI = int(os.environ.get("SO_TANG_CONG_KHAI", 3))
 
+# Cho phép trả lời comment CÔNG KHAI? Cần quyền pages_manage_engagement (qua App Review).
+# Mặc định TẮT ("0") -> khi khách comment, bot NHẮN RIÊNG (inbox) để tư vấn.
+# Sau khi App Review xong, đặt COMMENT_CONG_KHAI=1 để bật trả lời công khai 3 tầng.
+COMMENT_CONG_KHAI = os.environ.get("COMMENT_CONG_KHAI", "0") == "1"
+
 # Đếm số lần bot đã trả lời comment cho mỗi khách (theo từng bài đăng).
 dem_comment = {}
 
@@ -143,25 +148,31 @@ def xu_ly_comment(value: dict, page_id: str):
     if not noi_dung.strip():
         return
 
-    # Đếm số lần đã trả lời khách này dưới bài đăng này
+    # Nếu khách để lại số điện thoại / email ngay trong comment -> lưu khách hàng
+    xu_ly_lead(ten_khach, noi_dung, "Comment")
+
+    if not COMMENT_CONG_KHAI:
+        # ===== CHẾ ĐỘ HIỆN TẠI: NHẮN RIÊNG (inbox) cho khách comment =====
+        # (Trả lời công khai cần quyền pages_manage_engagement -> để dành sau App Review)
+        print(f"[Comment -> inbox | {ten_khach}]: {noi_dung}")
+        cau_tra_loi = tra_loi_comment(noi_dung, tang=99, ten_khach=ten_khach,
+                                      nguong_cong_khai=0)  # ép kiểu nhắn riêng
+        gui_tin_nhan_rieng(comment_id, cau_tra_loi)
+        return
+
+    # ===== CHẾ ĐỘ CÔNG KHAI (bật sau khi App Review): 3 tầng công khai rồi inbox =====
     khoa = f"{post_id}:{nguoi_cmt_id}"
     so_lan = dem_comment.get(khoa, 0)
     tang = so_lan + 1
     print(f"[Comment tầng {tang} | {ten_khach}]: {noi_dung}")
 
-    # Nếu khách để lại số điện thoại ngay trong comment -> lưu khách hàng
-    xu_ly_lead(ten_khach, noi_dung, "Comment")
-
     cau_tra_loi = tra_loi_comment(noi_dung, tang=tang, ten_khach=ten_khach,
                                   nguong_cong_khai=SO_TANG_CONG_KHAI)
 
     if tang <= SO_TANG_CONG_KHAI:
-        # Tầng 1-2: trả lời CÔNG KHAI dưới comment
         tra_loi_cong_khai(comment_id, cau_tra_loi)
     else:
-        # Tầng 3 trở đi: NHẮN TIN RIÊNG (inbox) cho khách
         gui_tin_nhan_rieng(comment_id, cau_tra_loi)
-        # Đồng thời để lại 1 dòng công khai cho lịch sự
         tra_loi_cong_khai(comment_id, "Em đã nhắn tin riêng cho mình rồi nhé, mình kiểm tra tin nhắn giúp shop ạ ❤️")
 
     dem_comment[khoa] = tang
