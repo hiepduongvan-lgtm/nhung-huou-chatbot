@@ -31,7 +31,7 @@ app = Flask(__name__)
 
 # Các thông tin lấy từ file .env
 VERIFY_TOKEN = os.environ.get("VERIFY_TOKEN", "nhunghuouboda")  # tự đặt, dùng khi nối webhook
-PAGE_ACCESS_TOKEN = os.environ["PAGE_ACCESS_TOKEN"]             # token của fanpage
+PAGE_ACCESS_TOKEN = os.environ.get("PAGE_ACCESS_TOKEN", "")     # token của fanpage (điền sau cũng được)
 
 # Số lần bot trả lời CÔNG KHAI tối đa trước khi chuyển sang nhắn tin riêng (inbox).
 # Mặc định 2 -> đến comment thứ 3 của cùng 1 khách thì bot inbox.
