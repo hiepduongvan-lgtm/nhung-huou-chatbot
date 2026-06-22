@@ -102,6 +102,7 @@ def nhan_su_kien():
 
             # 2) Comment dưới bài đăng (feed)
             for change in entry.get("changes", []):
+                print(f"[CHANGES RAW] field={change.get('field')} value={change.get('value')}")  # TẠM: chẩn đoán
                 if change.get("field") == "feed":
                     xu_ly_comment(change.get("value", {}), page_id)
 
