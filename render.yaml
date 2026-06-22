@@ -1,0 +1,27 @@
+# Cấu hình deploy tự động cho Render.com (Blueprint)
+# Render đọc file này để biết cách dựng và chạy chatbot.
+services:
+  - type: web
+    name: chatbot-nhung-huou-bo-da
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    healthCheckPath: /
+    envVars:
+      # Các biến BÍ MẬT — nhập trực tiếp trên Render (KHÔNG để trong code)
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: PAGE_ACCESS_TOKEN
+        sync: false
+      - key: VERIFY_TOKEN
+        sync: false
+      # Các biến cấu hình thường (có thể để sẵn)
+      - key: CLAUDE_MODEL
+        value: claude-haiku-4-5-20251001
+      - key: SO_TANG_CONG_KHAI
+        value: "2"
+      - key: FOLLOWUP_GIO_CHO
+        value: "24"
+      - key: FOLLOWUP_TOI_DA
+        value: "3"

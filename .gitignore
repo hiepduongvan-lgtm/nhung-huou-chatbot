@@ -1,0 +1,9 @@
+# KHÔNG bao giờ đưa các file bí mật / dữ liệu khách lên mạng!
+.env
+google_credentials.json
+khach_hang.csv
+khach_data.json
+__pycache__/
+*.pyc
+venv/
+.venv/
