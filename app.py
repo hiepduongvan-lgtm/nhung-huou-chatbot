@@ -57,7 +57,7 @@ def _giu_thuc():
     if not url:
         return  # chạy ở máy cá nhân thì không cần
     while True:
-        time.sleep(600)  # 10 phút
+        time.sleep(300)  # 5 phút (an toàn dưới ngưỡng ngủ 15 phút của Render)
         try:
             requests.get(url, timeout=15)
             print("⏰ Tự đánh thức server (giữ thức).")
@@ -116,6 +116,10 @@ def xu_ly_messenger(event: dict):
     noi_dung = event["message"]["text"]
     print(f"[Messenger {sender_id}]: {noi_dung}")
 
+    # Hiện "đã xem" + "đang soạn tin..." NGAY để khách thấy được phản hồi liền
+    gui_hanh_dong(sender_id, "mark_seen")
+    gui_hanh_dong(sender_id, "typing_on")
+
     # Nếu khách để lại số điện thoại / email -> tự động lưu khách hàng
     xu_ly_lead(f"Messenger {sender_id}", noi_dung, "Messenger")
 
@@ -126,7 +130,7 @@ def xu_ly_messenger(event: dict):
     # Lưu lại lượt trò chuyện này (đồng thời reset bộ đếm theo đuổi)
     store.ghi_tin_khach(sender_id, "", noi_dung, cau_tra_loi)
 
-    gui_tin_nhan(sender_id, cau_tra_loi)
+    gui_tin_nhan(sender_id, cau_tra_loi)  # gửi tin sẽ tự tắt "đang soạn tin"
 
 
 def xu_ly_comment(value: dict, page_id: str):
@@ -176,6 +180,17 @@ def xu_ly_comment(value: dict, page_id: str):
         tra_loi_cong_khai(comment_id, "Em đã nhắn tin riêng cho mình rồi nhé, mình kiểm tra tin nhắn giúp shop ạ ❤️")
 
     dem_comment[khoa] = tang
+
+
+def gui_hanh_dong(nguoi_nhan_id: str, action: str):
+    """Gửi trạng thái cho khách: 'mark_seen' (đã xem) / 'typing_on' (đang soạn tin)."""
+    url = "https://graph.facebook.com/v21.0/me/messages"
+    params = {"access_token": PAGE_ACCESS_TOKEN}
+    payload = {"recipient": {"id": nguoi_nhan_id}, "sender_action": action}
+    try:
+        requests.post(url, params=params, json=payload, timeout=10)
+    except Exception as e:
+        print(f"[sender_action] {e}")
 
 
 def gui_tin_nhan(nguoi_nhan_id: str, noi_dung: str):
