@@ -119,6 +119,7 @@ def xu_ly_messenger(event: dict):
     # Hiện "đã xem" + "đang soạn tin..." NGAY để khách thấy được phản hồi liền
     gui_hanh_dong(sender_id, "mark_seen")
     gui_hanh_dong(sender_id, "typing_on")
+    time.sleep(1.2)  # giữ dấu "..." hiện rõ một chút cho tự nhiên
 
     # Nếu khách để lại số điện thoại / email -> tự động lưu khách hàng
     xu_ly_lead(f"Messenger {sender_id}", noi_dung, "Messenger")
@@ -126,6 +127,7 @@ def xu_ly_messenger(event: dict):
     # Lấy ngữ cảnh cũ từ bộ nhớ bền (khách quay lại bot vẫn nhớ)
     lich_su = store.lay_lich_su(sender_id)
     cau_tra_loi = tra_loi(noi_dung, lich_su)
+    gui_hanh_dong(sender_id, "typing_on")  # gia hạn "..." trong lúc soạn xong
 
     # Lưu lại lượt trò chuyện này (đồng thời reset bộ đếm theo đuổi)
     store.ghi_tin_khach(sender_id, "", noi_dung, cau_tra_loi)
