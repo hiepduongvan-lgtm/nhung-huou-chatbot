@@ -29,10 +29,26 @@ _DIR = Path(__file__).parent
 FILE_DATA = _DIR / "khach_data.json"
 
 GIOI_HAN_LICH_SU = 40  # giữ tối đa 40 tin gần nhất / khách cho gọn
+SESSION_GAP_GIO = 2    # nghỉ quá 2 tiếng coi như PHIÊN MỚI -> tư vấn lại từ đầu
 
 
 def _now() -> str:
     return datetime.now().isoformat(timespec="seconds")
+
+
+def luot_phien_hien_tai(uid: str) -> int:
+    """Trả về số thứ tự lượt của khách TRONG PHIÊN hiện tại (để quyết định
+    đã tới bước báo giá chưa). Nghỉ lâu (>SESSION_GAP_GIO) -> phiên mới, về 1."""
+    kh = lay_khach(uid)
+    if not kh or not kh.get("lan_cuoi_khach"):
+        return 1
+    try:
+        gap = (datetime.now() - datetime.fromisoformat(kh["lan_cuoi_khach"])).total_seconds() / 3600
+    except Exception:
+        return 1
+    if gap > SESSION_GAP_GIO:
+        return 1  # phiên mới
+    return kh.get("so_luot_phien", 0) + 1
 
 
 def _load() -> dict:
@@ -57,8 +73,10 @@ def lay_lich_su(uid: str) -> list:
     return kh.get("lich_su", []) if kh else []
 
 
-def ghi_tin_khach(uid: str, ten: str, noi_dung_khach: str, reply_bot: str) -> dict:
-    """Lưu 1 lượt khách-bot. Khách vừa phản hồi -> reset bộ đếm theo đuổi."""
+def ghi_tin_khach(uid: str, ten: str, noi_dung_khach: str, reply_bot: str,
+                  luot_phien: int | None = None) -> dict:
+    """Lưu 1 lượt khách-bot. Khách vừa phản hồi -> reset bộ đếm theo đuổi.
+    luot_phien: số lượt trong phiên hiện tại (để bot biết giai đoạn tư vấn)."""
     data = _load()
     uid = str(uid)
     kh = data.get(uid) or {"ten": "", "lich_su": [], "so_lan_theo_duoi": 0}
@@ -67,6 +85,9 @@ def ghi_tin_khach(uid: str, ten: str, noi_dung_khach: str, reply_bot: str) -> di
     kh["lich_su"].append({"role": "user", "content": noi_dung_khach})
     kh["lich_su"].append({"role": "assistant", "content": reply_bot})
     kh["lich_su"] = kh["lich_su"][-GIOI_HAN_LICH_SU:]
+    if luot_phien is None:
+        luot_phien = luot_phien_hien_tai(uid)
+    kh["so_luot_phien"] = luot_phien
     kh["lan_cuoi_khach"] = _now()
     kh["lan_theo_duoi_cuoi"] = None
     kh["so_lan_theo_duoi"] = 0

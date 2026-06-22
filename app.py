@@ -92,10 +92,11 @@ def xu_ly_messenger(event: dict):
 
     # Lấy ngữ cảnh cũ từ bộ nhớ bền (khách quay lại bot vẫn nhớ)
     lich_su = store.lay_lich_su(sender_id)
-    cau_tra_loi = tra_loi(noi_dung, lich_su)
+    luot = store.luot_phien_hien_tai(sender_id)  # lượt trong phiên hiện tại
+    cau_tra_loi = tra_loi(noi_dung, lich_su, luot)
 
     # Lưu lại lượt trò chuyện này (đồng thời reset bộ đếm theo đuổi)
-    store.ghi_tin_khach(sender_id, "", noi_dung, cau_tra_loi)
+    store.ghi_tin_khach(sender_id, "", noi_dung, cau_tra_loi, luot)
 
     gui_tin_nhan(sender_id, cau_tra_loi)
 
