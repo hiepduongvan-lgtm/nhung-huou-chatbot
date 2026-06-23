@@ -75,6 +75,17 @@ def trang_chu():
     return "Chatbot Nhung Huou Bo Da dang chay!", 200
 
 
+@app.route("/run-theo-duoi", methods=["GET", "POST"])
+def run_theo_duoi():
+    """Kích hoạt THEO ĐUỔI khách — để cron-job.org gọi định kỳ (mỗi ngày).
+    Bảo vệ bằng key (dùng VERIFY_TOKEN). Gọi: /run-theo-duoi?key=VERIFY_TOKEN"""
+    if request.args.get("key", "") != VERIFY_TOKEN:
+        return "Sai key", 403
+    import theo_duoi
+    threading.Thread(target=theo_duoi.chay, daemon=True).start()
+    return "Da kich hoat theo duoi khach", 200
+
+
 @app.route("/webhook", methods=["GET"])
 def xac_minh_webhook():
     """Facebook gọi vào đây 1 lần để xác minh khi bạn kết nối webhook."""

@@ -16,6 +16,7 @@ import os
 import re
 import csv
 import sys
+import requests
 from datetime import datetime
 from pathlib import Path
 
@@ -33,6 +34,10 @@ NHAN_NGUON = "Chatbot FB"
 
 # Tiêu đề cột (dùng chung cho cả CSV và Google Sheet)
 TIEU_DE = ["Thời gian", "Tên khách", "Số điện thoại", "Email", "Nguồn", "Nội dung"]
+
+# Link Google Apps Script Web App (ghi thẳng vào file Google Sheet có sẵn của bạn).
+# Cấu hình trong .env: GOOGLE_SCRIPT_URL=https://script.google.com/macros/s/.../exec
+GOOGLE_SCRIPT_URL = os.environ.get("GOOGLE_SCRIPT_URL", "").strip()
 
 # Mẫu nhận diện số điện thoại Việt Nam (0xxxxxxxxx hoặc +84/84...)
 _MAU_SDT = re.compile(r"(?:(?:\+?84)|0)(?:[\s.\-]?\d){9}")
@@ -148,6 +153,23 @@ def _ghi_csv(dong: list):
 
 
 # ====================================================================
+# 3b) GHI VÀO GOOGLE SHEET QUA APPS SCRIPT (ghi thẳng vào file có sẵn của bạn)
+# ====================================================================
+def _ghi_apps_script(dong: list) -> bool:
+    if not GOOGLE_SCRIPT_URL:
+        return False
+    try:
+        r = requests.post(GOOGLE_SCRIPT_URL, data={
+            "thoi_gian": dong[0], "ten": dong[1], "sdt": dong[2],
+            "email": dong[3], "nguon": dong[4], "noi_dung": dong[5],
+        }, timeout=10)
+        return r.status_code == 200
+    except Exception as e:
+        print(f"[Apps Script] {e}")
+        return False
+
+
+# ====================================================================
 # 4) HÀM CHÍNH — phát hiện SĐT và lưu khách
 # ====================================================================
 def luu_khach_hang(ten: str, so_dt: str, email: str, noi_dung: str, kenh: str):
@@ -160,11 +182,13 @@ def luu_khach_hang(ten: str, so_dt: str, email: str, noi_dung: str, kenh: str):
         f"{NHAN_NGUON} - {kenh}",          # vd: "Chatbot FB - Comment"
         noi_dung.replace("\n", " ").strip(),
     ]
-    ket_qua_gs = _ghi_google_sheet(dong)
+    # Ưu tiên ghi vào file Google Sheet có sẵn qua Apps Script; nếu không có thì gspread
+    ket_qua_script = _ghi_apps_script(dong)
+    ket_qua_gs = False if ket_qua_script else _ghi_google_sheet(dong)
     _ghi_csv(dong)
-    noi_luu = "Google Sheet + CSV" if ket_qua_gs else "CSV"
+    noi_luu = "Google Sheet" if (ket_qua_script or ket_qua_gs) else "CSV"
     lien_he = " / ".join([x for x in (so_dt, email) if x])
-    print(f"📋 ĐÃ LƯU KHÁCH: {ten} - {lien_he} ({NHAN_NGUON} - {kenh}) -> {noi_luu}")
+    print(f"📋 ĐÃ LƯU KHÁCH: {ten} - {lien_he} ({NHAN_NGUON} - {kenh}) -> {noi_luu} + CSV")
 
 
 def xu_ly_lead(ten: str, noi_dung: str, kenh: str):
