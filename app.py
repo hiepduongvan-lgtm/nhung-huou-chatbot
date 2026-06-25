@@ -174,7 +174,12 @@ def xu_ly_comment(value: dict, page_id: str):
         print(f"[Comment -> inbox | {ten_khach}]: {noi_dung}")
         cau_tra_loi = tra_loi_comment(noi_dung, tang=99, ten_khach=ten_khach,
                                       nguong_cong_khai=0)  # ép kiểu nhắn riêng
-        gui_tin_nhan_rieng(comment_id, cau_tra_loi)
+        ok = gui_tin_nhan_rieng(comment_id, cau_tra_loi)
+        if not ok:
+            # Private reply thất bại (hay gặp: tự comment bằng chính tài khoản admin của Page,
+            # hoặc app còn ở chế độ Development nên comment của khách thật bị Facebook giữ lại).
+            print("   ↳ GỢI Ý: Hãy test bằng MỘT TÀI KHOẢN KHÁC (không phải admin Page). "
+                  "Với khách thật cần hoàn tất App Review + quyền pages_read_user_content.")
         return
 
     # ===== CHẾ ĐỘ CÔNG KHAI (bật sau khi App Review): 3 tầng công khai rồi inbox =====
@@ -229,15 +234,22 @@ def tra_loi_cong_khai(comment_id: str, noi_dung: str):
         print(f"[LỖI trả lời comment] {r.status_code}: {r.text}")
 
 
-def gui_tin_nhan_rieng(comment_id: str, noi_dung: str):
-    """Nhắn tin riêng (inbox) cho người đã comment.
+def gui_tin_nhan_rieng(comment_id: str, noi_dung: str) -> bool:
+    """Nhắn tin riêng (inbox) cho người đã comment. Trả về True nếu gửi thành công.
     Lưu ý: Facebook chỉ cho phép gửi private reply 1 lần cho mỗi comment,
     trong vòng 7 ngày kể từ khi khách comment."""
     url = f"https://graph.facebook.com/v21.0/{comment_id}/private_replies"
     params = {"access_token": PAGE_ACCESS_TOKEN}
-    r = requests.post(url, params=params, json={"message": noi_dung})
-    if r.status_code != 200:
-        print(f"[LỖI nhắn tin riêng] {r.status_code}: {r.text}")
+    try:
+        r = requests.post(url, params=params, json={"message": noi_dung}, timeout=15)
+    except Exception as e:
+        print(f"[LỖI nhắn tin riêng] Không gọi được Facebook: {e}")
+        return False
+    if r.status_code == 200:
+        print(f"   ↳ ✅ Đã gửi tin nhắn riêng vào Messenger cho comment {comment_id}")
+        return True
+    print(f"[LỖI nhắn tin riêng] {r.status_code}: {r.text}")
+    return False
 
 
 if __name__ == "__main__":
